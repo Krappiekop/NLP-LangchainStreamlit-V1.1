@@ -1,9 +1,9 @@
 import streamlit as st
-from langchain_community.llms import OpenAI
+from langchain.llms import OpenAI
 
 st.title('🦜🔗 Quickstart App')
 
-openai_api_key = st.sidebar.text_input('OpenAI API Key')
+openai_api_key = st.sidebar.text_input('sk-proj-xBcL1ugYJRn8wAYRoAOYT3BlbkFJz1dwV0lxxXU5ZPjpqKCJ')
 
 def generate_response(input_text):
   llm = OpenAI(temperature=0.7, openai_api_key=openai_api_key)
