@@ -2,11 +2,34 @@ import streamlit as st
 from langchain.llms import OpenAI
 from langchain import OpenAI as OpenAIModel
 
-st.title('NLP Application')
+import streamlit as st
+from transformers import pipeline
+
+# Define functions for each NLP task using the transformers library
+summarizer = pipeline("summarization")
+sentiment_analyzer = pipeline("sentiment-analysis")
+ner_analyzer = pipeline("ner")
+tokenizer = pipeline("token-classification", model="dbmdz/bert-large-cased-finetuned-conll03-english")
+
+def nlp_summary(text):
+    summary = summarizer(text, max_length=50, min_length=25, do_sample=False)
+    return summary[0]['summary_text']
+
+def nlp_sentiment(text):
+    sentiment = sentiment_analyzer(text)
+    return sentiment[0]
+
+def nlp_ner(text):
+    entities = ner_analyzer(text)
+    return entities
+
+def nlp_tokenize(text):
+    tokens = tokenizer(text)
+    return tokens
 
 # Function to handle ChatGPT interaction
 def chat_with_gpt():
-    st.title('Chat with AI')
+    st.title('NLP Application')
     openai_api_key = st.sidebar.text_input('OpenAI API Key')
 
     def generate_response(input_text):
@@ -54,24 +77,11 @@ def nlp_tasks():
         st.write("Tokens and Lemma:")
         st.info(tokens)
 
-# NLP function implementations (placeholders for actual implementation)
-def nlp_summary(text):
-    return "This is a summary of the text."
-
-def nlp_sentiment(text):
-    return "This is the sentiment score of the text."
-
-def nlp_ner(text):
-    return "These are the named entities in the text."
-
-def nlp_tokenize(text):
-    return "These are the tokens and lemma of the text."
-
 # Main script
 st.sidebar.title("Navigation")
-page = st.sidebar.selectbox("Go to", ["Chat with GPT", "NLP Tasks"])
+page = st.sidebar.selectbox("Go to", ["Chat with AI", "Process Text"])
 
-if page == "Chat with GPT":
+if page == "Chat with AI":
     chat_with_gpt()
 else:
     nlp_tasks()
