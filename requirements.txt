@@ -2,7 +2,7 @@ streamlit
 openai
 transformers
 langchain_community
-spacy==3.1.4
+spacy==3.0.6
 torch
 nltk
 textblob
