@@ -4,3 +4,4 @@ langchain
 transformers
 tensorflow
 tf-keras
+langchain-community
