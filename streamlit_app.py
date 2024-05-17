@@ -1,18 +1,38 @@
-import streamlit as st
-from langchain_community.llms import OpenAI
+# Core Pkgs
+import streamlit as st 
 
-st.title('🦜Test APP')
+# NLP Pkgs
+import spacy_streamlit
+import spacy
+nlp = spacy.load('en')
 
-openai_api_key = st.sidebar.text_input('Your API Key')
+import os
+from PIL import Image
 
-def generate_response(input_text):
-  llm = OpenAI(temperature=0.7, openai_api_key=openai_api_key)
-  st.info(llm(input_text))
 
-with st.form('my_form'):
-  text = st.text_area('Enter text:', 'What are the three key pieces of advice for learning how to code?')
-  submitted = st.form_submit_button('Submit')
-  if not openai_api_key.startswith('sk-'):
-    st.warning('Please enter your OpenAI API key!', icon='⚠')
-  if submitted and openai_api_key.startswith('sk-'):
-    generate_response(text)
+def main():
+	"""A Simple NLP app with Spacy-Streamlit"""
+
+	st.title("Spacy-Streamlit NLP App")
+        our_image = Image.open(os.path.join('SpaCy_logo.svg.png'))
+	st.image(our_image)
+
+	menu = ["Home","NER"]
+	choice = st.sidebar.selectbox("Menu",menu)
+
+	if choice == "Home":
+		st.subheader("Tokenization")
+		raw_text = st.text_area("Your Text","Enter Text Here")
+		docx = nlp(raw_text)
+		if st.button("Tokenize"):
+			spacy_streamlit.visualize_tokens(docx,attrs=['text','pos_','dep_','ent_type_'])
+
+	elif choice == "NER":
+		st.subheader("Named Entity Recognition")
+		raw_text = st.text_area("Your Text","Enter Text Here")
+		docx = nlp(raw_text)
+		spacy_streamlit.visualize_ner(docx,labels=nlp.get_pipe('ner').labels)
+
+
+if __name__ == '__main__':
+	main()
