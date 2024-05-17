@@ -1,35 +1,34 @@
 import streamlit as st
-from langchain.llms import OpenAI
-from langchain import OpenAI as OpenAIModel
+from langchain_community.llms import OpenAI as OpenAIModel
+import spacy
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+from textblob import TextBlob
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, AutoModelForSequenceClassification
+import torch
+import nltk
 
-import streamlit as st
-from transformers import pipeline
 
-# Define functions for each NLP task using the transformers library
-summarizer = pipeline("summarization")
-sentiment_analyzer = pipeline("sentiment-analysis")
-ner_analyzer = pipeline("ner")
-tokenizer = pipeline("token-classification", model="dbmdz/bert-large-cased-finetuned-conll03-english")
 
-def nlp_summary(text):
-    summary = summarizer(text, max_length=50, min_length=25, do_sample=False)
-    return summary[0]['summary_text']
+st.title('NLP Application') #Title
 
-def nlp_sentiment(text):
-    sentiment = sentiment_analyzer(text)
-    return sentiment[0]
+# Download NLP model
+nltk.download('wordnet')
+# Load NLP models
+nlp = spacy.load("en_core_web_sm")
 
-def nlp_ner(text):
-    entities = ner_analyzer(text)
-    return entities
+# Load models for summarization and sentiment analysis
+summarization_model_name = "facebook/bart-large-cnn"
+tokenizer_summarization = AutoTokenizer.from_pretrained(summarization_model_name)
+model_summarization = AutoModelForSeq2SeqLM.from_pretrained(summarization_model_name)
 
-def nlp_tokenize(text):
-    tokens = tokenizer(text)
-    return tokens
+sentiment_model_name = "nlptown/bert-base-multilingual-uncased-sentiment"
+tokenizer_sentiment = AutoTokenizer.from_pretrained(sentiment_model_name)
+model_sentiment = AutoModelForSequenceClassification.from_pretrained(sentiment_model_name)
 
 # Function to handle ChatGPT interaction
 def chat_with_gpt():
-    st.title('NLP Application')
+    st.title('Chat with AI')
     openai_api_key = st.sidebar.text_input('OpenAI API Key')
 
     def generate_response(input_text):
@@ -45,12 +44,38 @@ def chat_with_gpt():
         if submitted and openai_api_key.startswith('sk-'):
             generate_response(text)
 
+# NLP functions
+def nlp_summary(text):
+    inputs = tokenizer_summarization.encode("summarize: " + text, return_tensors="pt", max_length=512, truncation=True)
+    summary_ids = model_summarization.generate(inputs, max_length=150, min_length=40, length_penalty=2.0, num_beams=4, early_stopping=True)
+    summary = tokenizer_summarization.decode(summary_ids[0], skip_special_tokens=True)
+    return summary
+
+def nlp_sentiment(text):
+    inputs = tokenizer_sentiment(text, return_tensors="pt", truncation=True)
+    outputs = model_sentiment(**inputs)
+    probs = torch.nn.functional.softmax(outputs.logits, dim=-1)
+    sentiment = torch.argmax(probs, dim=1).item()
+    sentiment_labels = ['very negative', 'negative', 'neutral', 'positive', 'very positive']
+    return sentiment_labels[sentiment]
+
+def nlp_ner(text):
+    doc = nlp(text)
+    entities = [(ent.text, ent.label_) for ent in doc.ents]
+    return entities
+
+def nlp_tokenize(text):
+    tokens = word_tokenize(text)
+    lemmatizer = WordNetLemmatizer()
+    tokens_and_lemmas = [(token, lemmatizer.lemmatize(token)) for token in tokens]
+    return tokens_and_lemmas
+
 # Function to handle NLP tasks
 def nlp_tasks():
     st.title('Process Text')
     st.subheader('Natural Language Processing for everyone')
     st.write("""
-        This is a Natural Language Processing(NLP) Based App useful for basic NLP tasks: Tokenization, Lemmatization, 
+        This is a Natural Language Processing (NLP) Based App useful for basic NLP tasks: Tokenization, Lemmatization, 
         Named Entity Recognition (NER), Sentiment Analysis, Text Summarization.
         Click any of the checkboxes to get started.
     """)
@@ -77,11 +102,11 @@ def nlp_tasks():
         st.write("Tokens and Lemma:")
         st.info(tokens)
 
-# Main script
-st.sidebar.title("Navigation")
-page = st.sidebar.selectbox("Go to", ["Chat with AI", "Process Text"])
+# Add sidebar for navigation
+st.sidebar.title('Navigation')
+options = st.sidebar.radio('Go to', ['Chat with GPT', 'NLP Tasks'])
 
-if page == "Chat with AI":
+if options == 'Chat with GPT':
     chat_with_gpt()
-else:
+elif options == 'NLP Tasks':
     nlp_tasks()
