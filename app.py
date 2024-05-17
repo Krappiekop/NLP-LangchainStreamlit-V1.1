@@ -15,6 +15,7 @@ st.title('NLP Application') #Title
 # Download NLP model
 nltk.download('wordnet')
 # Load NLP models
+spacy.download("en_core_web_sm")
 nlp = spacy.load("en_core_web_sm")
 
 # Load models for summarization and sentiment analysis
