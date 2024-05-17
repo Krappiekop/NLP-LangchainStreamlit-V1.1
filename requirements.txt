@@ -4,7 +4,7 @@ transformers
 tensorflow
 tf-keras
 langchain_community
-spacy==3.1.4
+spacy==3.0.0
 torch
 nltk
 textblob
