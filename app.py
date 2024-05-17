@@ -2,7 +2,7 @@ import streamlit as st
 from langchain.llms import OpenAI
 from langchain import OpenAI as OpenAIModel
 
-st.title('Main Page')
+st.title('NLP Application')
 
 # Function to handle ChatGPT interaction
 def chat_with_gpt():
@@ -24,7 +24,7 @@ def chat_with_gpt():
 
 # Function to handle NLP tasks
 def nlp_tasks():
-    st.title('NLP Application')
+    st.title('Process Text')
     st.subheader('Natural Language Processing for everyone')
     st.write("""
         This is a Natural Language Processing(NLP) Based App useful for basic NLP tasks: Tokenization, Lemmatization, 
