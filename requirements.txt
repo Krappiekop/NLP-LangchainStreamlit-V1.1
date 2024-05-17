@@ -4,4 +4,8 @@ langchain
 transformers
 tensorflow
 tf-keras
-langchain-community
+langchain_community
+spacy
+torch
+nltk
+textblob
